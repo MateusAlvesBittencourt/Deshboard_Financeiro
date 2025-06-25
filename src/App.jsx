@@ -11,6 +11,8 @@ import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart,
 import './App.css'
 import { salvarDado, listarDados, atualizarDado, deletarDado } from './lib/db'
 import Papa from 'papaparse'
+import { useTheme } from "next-themes";
+import { Switch } from "@/components/ui/switch.jsx";
 
 function App() {
   const [transactions, setTransactions] = useState([])
@@ -24,6 +26,7 @@ function App() {
   const [editTransactionId, setEditTransactionId] = useState(null)
   const [editTransaction, setEditTransaction] = useState(null)
   const importInputRef = useRef(null)
+  const { theme, setTheme } = useTheme();
 
   // Categorias predefinidas
   const incomeCategories = ['Salário', 'Freelance', 'Investimentos', 'Outros']
@@ -38,6 +41,15 @@ function App() {
     fetchTransactions();
   }, []);
 
+  // Função para formatar input como moeda brasileira
+  function formatCurrencyInput(value) {
+    value = value.replace(/\D/g, '');
+    let intValue = parseInt(value, 10);
+    if (isNaN(intValue)) return '';
+    let formatted = (intValue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return formatted;
+  }
+
   // Salvar nova transação no IndexedDB
   const addTransaction = async () => {
     if (!newTransaction.amount || !newTransaction.category || !newTransaction.description) {
@@ -45,10 +57,27 @@ function App() {
       return
     }
 
+    const amount = parseFloat(newTransaction.amount.replace(/\./g, '').replace(',', '.'));
+
+    if (isNaN(amount) || amount <= 0) {
+      alert('Por favor, insira um valor positivo maior que zero.');
+      return;
+    }
+
+    if (newTransaction.type === 'income' && amount < 0) {
+      alert('Receitas não podem ter valor negativo.');
+      return;
+    }
+
+    if (newTransaction.type === 'expense' && amount < 0) {
+      alert('Despesas não podem ter valor negativo.');
+      return;
+    }
+
     const transaction = {
       id: Date.now().toString(),
       ...newTransaction,
-      amount: parseFloat(newTransaction.amount),
+      amount,
       createdAt: new Date().toISOString()
     }
 
@@ -82,9 +111,26 @@ function App() {
       alert('Por favor, preencha todos os campos')
       return
     }
+    const amount = parseFloat(editTransaction.amount.replace(/\./g, '').replace(',', '.'));
+
+    if (isNaN(amount) || amount <= 0) {
+      alert('Por favor, insira um valor positivo maior que zero.');
+      return;
+    }
+
+    if (editTransaction.type === 'income' && amount < 0) {
+      alert('Receitas não podem ter valor negativo.');
+      return;
+    }
+
+    if (editTransaction.type === 'expense' && amount < 0) {
+      alert('Despesas não podem ter valor negativo.');
+      return;
+    }
+
     const updated = {
       ...editTransaction,
-      amount: parseFloat(editTransaction.amount)
+      amount
     }
     await atualizarDado(updated)
     const updatedTransactions = await listarDados()
@@ -335,59 +381,67 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-white dark:bg-gray-900 p-4">
+      <div className="flex justify-end mb-4">
+        <span className="mr-2 text-sm">🌞</span>
+        <Switch
+          checked={theme === "dark"}
+          onCheckedChange={checked => setTheme(checked ? "dark" : "light")}
+        />
+        <span className="ml-2 text-sm">🌙</span>
+      </div>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Financeiro Pessoal</h1>
-          <p className="text-gray-600">Controle suas finanças de forma inteligente</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard Financeiro Pessoal</h1>
+          <p className="text-gray-400 dark:text-gray-300">Controle suas finanças de forma inteligente</p>
         </div>
 
         {/* Cards de Resumo */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+          <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Saldo Atual</CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Saldo Atual</CardTitle>
+              <Wallet className="h-4 w-4 text-gray-400 dark:text-gray-300" />
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${currentBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`text-2xl font-bold ${currentBalance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {formatCurrency(currentBalance)}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Receitas do Mês</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Receitas do Mês</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {formatCurrency(monthlyIncome)}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Despesas do Mês</CardTitle>
-              <TrendingDown className="h-4 w-4 text-red-600" />
+              <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Despesas do Mês</CardTitle>
+              <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {formatCurrency(monthlyExpenses)}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Economia do Mês</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-gray-900 dark:text-white">Economia do Mês</CardTitle>
+              <DollarSign className="h-4 w-4 text-gray-400 dark:text-gray-300" />
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${monthlySavings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`text-2xl font-bold ${monthlySavings >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {formatCurrency(monthlySavings)}
               </div>
             </CardContent>
@@ -404,7 +458,7 @@ function App() {
 
           {/* Aba Adicionar Transação */}
           <TabsContent value="add-transaction">
-            <Card>
+            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PlusCircle className="h-5 w-5" />
@@ -435,10 +489,14 @@ function App() {
                     <Label htmlFor="amount">Valor</Label>
                     <Input
                       id="amount"
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       placeholder="0,00"
                       value={newTransaction.amount}
-                      onChange={(e) => setNewTransaction({...newTransaction, amount: e.target.value})}
+                      onChange={e => {
+                        const formatted = formatCurrencyInput(e.target.value);
+                        setNewTransaction({ ...newTransaction, amount: formatted });
+                      }}
                     />
                   </div>
 
@@ -489,7 +547,7 @@ function App() {
 
           {/* Aba Transações */}
           <TabsContent value="transactions">
-            <Card>
+            <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2">
@@ -519,9 +577,13 @@ function App() {
                           {editTransactionId === transaction.id ? (
                             <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
                               <Input
-                                type="number"
+                                type="text"
+                                inputMode="decimal"
                                 value={editTransaction.amount}
-                                onChange={e => setEditTransaction({ ...editTransaction, amount: e.target.value })}
+                                onChange={e => {
+                                  const formatted = formatCurrencyInput(e.target.value);
+                                  setEditTransaction({ ...editTransaction, amount: formatted });
+                                }}
                                 className="w-24"
                               />
                               <Select value={editTransaction.category} onValueChange={value => setEditTransaction({ ...editTransaction, category: value })}>
@@ -583,7 +645,7 @@ function App() {
           <TabsContent value="analytics">
             <div className="space-y-6">
               {transactions.length === 0 ? (
-                <Card>
+                <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BarChart3 className="h-5 w-5" />
@@ -595,7 +657,7 @@ function App() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-center py-8">
-                      <p className="text-gray-500">
+                      <p className="text-gray-500 dark:text-gray-300">
                         Adicione algumas transações para visualizar gráficos e análises
                       </p>
                     </div>
@@ -605,7 +667,7 @@ function App() {
                 <>
                   {/* Gráfico de Pizza - Gastos por Categoria */}
                   {pieData.length > 0 && (
-                    <Card>
+                    <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <PieChart className="h-5 w-5" />
@@ -644,7 +706,7 @@ function App() {
 
                   {/* Gráfico de Barras - Receitas vs Despesas por Mês */}
                   {barData.length > 0 && (
-                    <Card>
+                    <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <BarChart3 className="h-5 w-5" />
@@ -674,7 +736,7 @@ function App() {
 
                   {/* Gráfico de Linha - Evolução do Saldo */}
                   {lineData.length > 0 && (
-                    <Card>
+                    <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <TrendingUp className="h-5 w-5" />
@@ -711,7 +773,7 @@ function App() {
                   )}
 
                   {/* Estatísticas Resumidas */}
-                  <Card>
+                  <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
                     <CardHeader>
                       <CardTitle>Estatísticas Resumidas</CardTitle>
                       <CardDescription>
