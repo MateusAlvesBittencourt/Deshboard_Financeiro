@@ -32,6 +32,13 @@ function App() {
   const incomeCategories = ['Salário', 'Freelance', 'Investimentos', 'Outros']
   const expenseCategories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Lazer', 'Educação', 'Outros']
 
+  // Filtros avançados
+  const [filterType, setFilterType] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
+  const [filterDescription, setFilterDescription] = useState('');
+
   // Carregar dados do IndexedDB
   useEffect(() => {
     async function fetchTransactions() {
@@ -380,6 +387,20 @@ function App() {
     }
   };
 
+  // Função para filtrar transações
+  const filteredTransactions = transactions.filter(t => {
+    // Tipo
+    if (filterType !== 'all' && t.type !== filterType) return false;
+    // Categoria
+    if (filterCategory !== 'all' && t.category !== filterCategory) return false;
+    // Período
+    if (filterStartDate && new Date(t.date) < new Date(filterStartDate)) return false;
+    if (filterEndDate && new Date(t.date) > new Date(filterEndDate)) return false;
+    // Descrição
+    if (filterDescription && !t.description.toLowerCase().includes(filterDescription.toLowerCase())) return false;
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 p-4">
       <div className="flex justify-end mb-4">
@@ -549,7 +570,7 @@ function App() {
           <TabsContent value="transactions">
             <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center flex-wrap gap-4">
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="h-5 w-5" />
                     Histórico de Transações
@@ -563,16 +584,61 @@ function App() {
                 <CardDescription>
                   Visualize todas as suas transações
                 </CardDescription>
+                {/* Filtros avançados */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <Select value={filterType} onValueChange={setFilterType}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="income">Receita</SelectItem>
+                      <SelectItem value="expense">Despesa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas</SelectItem>
+                      {[...incomeCategories, ...expenseCategories].map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="date"
+                    value={filterStartDate}
+                    onChange={e => setFilterStartDate(e.target.value)}
+                    className="w-36"
+                    placeholder="Data inicial"
+                  />
+                  <Input
+                    type="date"
+                    value={filterEndDate}
+                    onChange={e => setFilterEndDate(e.target.value)}
+                    className="w-36"
+                    placeholder="Data final"
+                  />
+                  <Input
+                    type="text"
+                    value={filterDescription}
+                    onChange={e => setFilterDescription(e.target.value)}
+                    className="w-48"
+                    placeholder="Buscar descrição..."
+                  />
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {transactions.length === 0 ? (
+                  {filteredTransactions.length === 0 ? (
                     <p className="text-center text-gray-500 py-8">
-                      Nenhuma transação encontrada. Adicione sua primeira transação!
+                      Nenhuma transação encontrada. Ajuste os filtros ou adicione sua primeira transação!
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      {transactions.slice().reverse().map(transaction => (
+                      {filteredTransactions.slice().reverse().map(transaction => (
                         <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
                           {editTransactionId === transaction.id ? (
                             <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
