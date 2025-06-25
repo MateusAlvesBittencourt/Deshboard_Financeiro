@@ -17,6 +17,7 @@ Um dashboard completo para controle financeiro pessoal desenvolvido em React com
 - ✅ Interface responsiva para desktop e mobile
 - ✅ Persistência de dados no navegador (IndexedDB)
 - ✅ Importação e exportação de dados em CSV
+- ✅ **Identificação de despesas recorrentes e parceladas**
 
 ### 📊 Análises Disponíveis
 - Distribuição de gastos por categoria
@@ -25,6 +26,7 @@ Um dashboard completo para controle financeiro pessoal desenvolvido em React com
 - Média de gastos semanais
 - Categoria com maior gasto
 - Projeções baseadas em médias históricas
+- **Visualização de badges para despesas recorrentes e parceladas**
 
 ## 🛠️ Tecnologias
 
@@ -100,9 +102,18 @@ Os dados são armazenados localmente no navegador usando **IndexedDB**:
   category: string,     // Categoria selecionada
   description: string,  // Descrição da transação
   date: string,         // Data no formato ISO
-  createdAt: string     // Timestamp de criação
+  createdAt: string,    // Timestamp de criação
+  recurrence: 'none' | 'recorrente' | 'parcelada', // Tipo de recorrência
+  recurrenceFrequency?: 'mensal' | 'semanal' | 'anual', // Frequência se recorrente
+  installments?: number // Nº de parcelas se parcelada
 }
 ```
+
+## 🆕 Despesas Recorrentes e Parceladas
+
+- **Recorrente:** Marque a transação como recorrente e escolha a frequência (mensal, semanal, anual). Um badge azul será exibido no histórico.
+- **Parcelada:** Marque como parcelada e informe o número de parcelas. Um badge roxo será exibido no histórico.
+- Você pode editar a recorrência/parcelamento de uma transação a qualquer momento no histórico.
 
 ## 📤 Importação e Exportação de Dados (CSV)
 
@@ -110,8 +121,8 @@ Os dados são armazenados localmente no navegador usando **IndexedDB**:
 - **Importar:** Clique em "Importar de CSV" e selecione um arquivo `.csv` gerado pelo sistema ou com o mesmo padrão de colunas:
 
 ```
-id,type,amount,category,description,date,createdAt
-1750453067723,expense,1083,"Moradia","financiamento Caixa",2025-06-20,2025-06-20T20:57:47.723Z
+id,type,amount,category,description,date,createdAt,recurrence,recurrenceFrequency,installments
+1750453067723,expense,1083,"Moradia","financiamento Caixa",2025-06-20,2025-06-20T20:57:47.723Z,recorrente,mensal,
 ```
 
 > **Atenção:**
@@ -127,6 +138,8 @@ id,type,amount,category,description,date,createdAt
 - **Saldo Positivo**: Verde
 - **Saldo Negativo**: Vermelho
 - **Alertas**: Vermelho com fundo claro
+- **Recorrente**: Badge azul
+- **Parcelada**: Badge roxo
 
 ### Responsividade
 - Grid adaptativo para diferentes tamanhos de tela
@@ -198,9 +211,6 @@ const spendingLimit = avgMonthlyIncome * 0.8  // 80% -> altere para o valor dese
 ### Melhorias Técnicas
 - [ ] Migração para TypeScript completo
 - [ ] Testes unitários e de integração
-- [ ] PWA (Progressive Web App)
-- [ ] Otimização de performance
-- [ ] Acessibilidade (WCAG)
 
 ## 📝 Licença
 
