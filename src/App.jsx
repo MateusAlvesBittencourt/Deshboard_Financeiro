@@ -21,7 +21,10 @@ function App() {
     amount: '',
     category: '',
     description: '',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    recurrence: 'none',
+    recurrenceFrequency: '',
+    installments: '',
   })
   const [editTransactionId, setEditTransactionId] = useState(null)
   const [editTransaction, setEditTransaction] = useState(null)
@@ -38,6 +41,17 @@ function App() {
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
   const [filterDescription, setFilterDescription] = useState('');
+
+  const recurrenceOptions = [
+    { value: 'none', label: 'Nenhuma' },
+    { value: 'recorrente', label: 'Recorrente' },
+    { value: 'parcelada', label: 'Parcelada' },
+  ];
+  const recurrenceFrequencies = [
+    { value: 'mensal', label: 'Mensal' },
+    { value: 'semanal', label: 'Semanal' },
+    { value: 'anual', label: 'Anual' },
+  ];
 
   // Carregar dados do IndexedDB
   useEffect(() => {
@@ -85,7 +99,7 @@ function App() {
       id: Date.now().toString(),
       ...newTransaction,
       amount,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     }
 
     await salvarDado(transaction);
@@ -96,7 +110,10 @@ function App() {
       amount: '',
       category: '',
       description: '',
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      recurrence: 'none',
+      recurrenceFrequency: '',
+      installments: '',
     })
   }
 
@@ -546,6 +563,56 @@ function App() {
                       onChange={(e) => setNewTransaction({...newTransaction, date: e.target.value})}
                     />
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="recurrence">Recorrência</Label>
+                    <Select
+                      value={newTransaction.recurrence}
+                      onValueChange={value => setNewTransaction({ ...newTransaction, recurrence: value, recurrenceFrequency: '', installments: '' })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Tipo de recorrência" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {recurrenceOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {newTransaction.recurrence === 'recorrente' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="recurrenceFrequency">Frequência</Label>
+                      <Select
+                        value={newTransaction.recurrenceFrequency}
+                        onValueChange={value => setNewTransaction({ ...newTransaction, recurrenceFrequency: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Frequência" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {recurrenceFrequencies.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {newTransaction.recurrence === 'parcelada' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="installments">Nº de Parcelas</Label>
+                      <Input
+                        id="installments"
+                        type="number"
+                        min="1"
+                        value={newTransaction.installments}
+                        onChange={e => setNewTransaction({ ...newTransaction, installments: e.target.value })}
+                        placeholder="Ex: 12"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -671,6 +738,44 @@ function App() {
                                 onChange={e => setEditTransaction({ ...editTransaction, date: e.target.value })}
                                 className="w-36"
                               />
+                              <Select
+                                value={editTransaction.recurrence || 'none'}
+                                onValueChange={value => setEditTransaction({ ...editTransaction, recurrence: value, recurrenceFrequency: '', installments: '' })}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue placeholder="Recorrência" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {recurrenceOptions.map(opt => (
+                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {editTransaction.recurrence === 'recorrente' && (
+                                <Select
+                                  value={editTransaction.recurrenceFrequency || ''}
+                                  onValueChange={value => setEditTransaction({ ...editTransaction, recurrenceFrequency: value })}
+                                >
+                                  <SelectTrigger className="w-28">
+                                    <SelectValue placeholder="Frequência" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {recurrenceFrequencies.map(opt => (
+                                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                              {editTransaction.recurrence === 'parcelada' && (
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  value={editTransaction.installments || ''}
+                                  onChange={e => setEditTransaction({ ...editTransaction, installments: e.target.value })}
+                                  className="w-20"
+                                  placeholder="Parcelas"
+                                />
+                              )}
                               <Button onClick={saveEditTransaction} className="bg-green-600 hover:bg-green-700 text-white">Salvar</Button>
                               <Button variant="outline" onClick={cancelEditTransaction}>Cancelar</Button>
                             </div>
@@ -679,8 +784,16 @@ function App() {
                               <div className="flex items-center gap-3">
                                 <div className={`w-3 h-3 rounded-full ${transaction.type === 'income' ? 'bg-green-500' : 'bg-red-500'}`} />
                                 <div>
-                                  <p className="font-medium">{transaction.description}</p>
-                                  <p className="text-sm text-gray-500">
+                                  <p className="font-medium flex items-center gap-2">
+                                    {transaction.description}
+                                    {transaction.recurrence === 'recorrente' && (
+                                      <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-0.5 rounded">Recorrente{transaction.recurrenceFrequency ? ` (${transaction.recurrenceFrequency})` : ''}</span>
+                                    )}
+                                    {transaction.recurrence === 'parcelada' && (
+                                      <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs px-2 py-0.5 rounded">Parcelada{transaction.installments ? ` (${transaction.installments}x)` : ''}</span>
+                                    )}
+                                  </p>
+                                  <p className="text-sm text-gray-500 dark:text-gray-400">
                                     {transaction.category} • {new Date(transaction.date).toLocaleDateString('pt-BR')}
                                   </p>
                                 </div>
