@@ -443,8 +443,8 @@ function App() {
               <Wallet className="h-4 w-4 text-gray-400 dark:text-gray-300" />
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${currentBalance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {formatCurrency(currentBalance)}
+              <div className={`text-2xl font-bold ${monthlySavings >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                {formatCurrency(monthlySavings)}
               </div>
             </CardContent>
           </Card>
