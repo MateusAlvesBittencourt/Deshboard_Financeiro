@@ -419,8 +419,8 @@ function App() {
   });
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 p-2 sm:p-4">
-      <div className="flex flex-col sm:flex-row justify-end items-center mb-4 gap-2 sm:gap-0">
+    <div className="min-h-screen bg-white dark:bg-gray-900 p-1 sm:p-4">
+      <div className="flex flex-col sm:flex-row justify-end items-center mb-2 sm:mb-4 gap-1 sm:gap-0">
         <span className="mr-0 sm:mr-2 text-sm">🌞</span>
         <Switch
           checked={theme === "dark"}
@@ -428,11 +428,11 @@ function App() {
         />
         <span className="ml-0 sm:ml-2 text-sm">🌙</span>
       </div>
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+      <div className="max-w-7xl mx-auto space-y-2 sm:space-y-6 px-1 sm:px-0">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Dashboard Financeiro Pessoal</h1>
-          <p className="text-gray-400 dark:text-gray-300 text-sm sm:text-base">Controle suas finanças de forma inteligente</p>
+        <div className="text-center space-y-1 sm:space-y-2">
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">Dashboard Financeiro Pessoal</h1>
+          <p className="text-gray-400 dark:text-gray-300 text-xs sm:text-base">Controle suas finanças de forma inteligente</p>
         </div>
 
         {/* Cards de Resumo */}
@@ -487,8 +487,8 @@ function App() {
         </div>
 
         {/* Conteúdo Principal */}
-        <Tabs defaultValue="add-transaction" className="space-y-2 sm:space-y-4">
-          <TabsList className="grid w-full grid-cols-1 xs:grid-cols-2 md:grid-cols-3">
+        <Tabs defaultValue="add-transaction" className="space-y-1 sm:space-y-4">
+          <TabsList className="grid w-full grid-cols-1 xs:grid-cols-2 md:grid-cols-3 text-xs sm:text-base">
             <TabsTrigger value="add-transaction">Adicionar Transação</TabsTrigger>
             <TabsTrigger value="transactions">Transações</TabsTrigger>
             <TabsTrigger value="analytics">Análises</TabsTrigger>
@@ -506,7 +506,7 @@ function App() {
                   Adicione uma nova receita ou despesa
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-2 sm:space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="type">Tipo</Label>
@@ -615,17 +615,18 @@ function App() {
                   )}
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1 sm:space-y-2">
                   <Label htmlFor="description">Descrição</Label>
                   <Input
                     id="description"
                     placeholder="Descrição da transação"
                     value={newTransaction.description}
                     onChange={(e) => setNewTransaction({...newTransaction, description: e.target.value})}
+                    className="text-xs sm:text-base py-2"
                   />
                 </div>
 
-                <Button onClick={addTransaction} className="w-full text-base py-2">
+                <Button onClick={addTransaction} className="w-full text-xs sm:text-base py-2">
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Adicionar Transação
                 </Button>
@@ -637,12 +638,12 @@ function App() {
           <TabsContent value="transactions">
             <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
               <CardHeader>
-                <div className="flex flex-col sm:flex-row justify-between items-center flex-wrap gap-2 sm:gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center flex-wrap gap-1 sm:gap-4">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Calendar className="h-5 w-5" />
                     Histórico de Transações
                   </CardTitle>
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-1 sm:gap-2 flex-wrap">
                     <input type="file" accept=".csv" ref={importInputRef} className="hidden" onChange={handleImport} />
                     <Button onClick={() => importInputRef.current.click()} variant="outline" className="text-xs sm:text-sm">Importar de CSV</Button>
                     <Button onClick={exportToTXT} variant="outline" className="text-xs sm:text-sm">Exportar para CSV</Button>
@@ -652,7 +653,7 @@ function App() {
                   Visualize todas as suas transações
                 </CardDescription>
                 {/* Filtros avançados */}
-                <div className="flex flex-col sm:flex-row flex-wrap gap-2 mt-4">
+                <div className="flex flex-col sm:flex-row flex-wrap gap-1 sm:gap-2 mt-2 sm:mt-4">
                   <Select value={filterType} onValueChange={setFilterType}>
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Tipo" />
@@ -698,15 +699,15 @@ function App() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4 overflow-x-auto">
+                <div className="space-y-2 sm:space-y-4 overflow-x-auto">
                   {filteredTransactions.length === 0 ? (
-                    <p className="text-center text-gray-500 py-8">
+                    <p className="text-center text-gray-500 py-4 sm:py-8 text-xs sm:text-base">
                       Nenhuma transação encontrada. Ajuste os filtros ou adicione sua primeira transação!
                     </p>
                   ) : (
-                    <div className="space-y-2 min-w-[320px]">
+                    <div className="space-y-1 sm:space-y-2 min-w-[280px] sm:min-w-[320px]">
                       {filteredTransactions.slice().reverse().map(transaction => (
-                        <div key={transaction.id} className="flex flex-col md:flex-row md:items-center justify-between p-2 sm:p-4 border rounded-lg gap-2 sm:gap-0">
+                        <div key={transaction.id} className="flex flex-col md:flex-row md:items-center justify-between p-2 sm:p-4 border rounded-lg gap-1 sm:gap-0 text-xs sm:text-base">
                           {editTransactionId === transaction.id ? (
                             <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
                               <Input
@@ -822,7 +823,7 @@ function App() {
 
           {/* Aba Análises */}
           <TabsContent value="analytics">
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-2 sm:space-y-6">
               {transactions.length === 0 ? (
                 <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
                   <CardHeader>
