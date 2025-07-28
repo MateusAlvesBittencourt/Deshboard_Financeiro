@@ -16,9 +16,9 @@ import { useChartData } from './hooks/useChartData'
 import { useFilters } from './hooks/useFilters'
 
 // Componentes Lazy Loading para performance
-const DashboardCards = lazy(() => import('./components/Dashboard/DashboardCardsModerno').then(m => ({ default: m.DashboardCards })))
-const TransactionForm = lazy(() => import('./components/TransactionForm/TransactionFormModerno').then(m => ({ default: m.TransactionForm })))
-const TransactionList = lazy(() => import('./components/TransactionList/TransactionListModerno').then(m => ({ default: m.TransactionList })))
+const DashboardCards = lazy(() => import('./components/Dashboard/DashboardCards').then(m => ({ default: m.DashboardCards })))
+const TransactionForm = lazy(() => import('./components/TransactionForm/TransactionForm').then(m => ({ default: m.TransactionForm })))
+const TransactionList = lazy(() => import('./components/TransactionList/TransactionList').then(m => ({ default: m.TransactionList })))
 const ChartsSection = lazy(() => import('./components/Charts/ChartsSection').then(m => ({ default: m.ChartsSection })))
 const StatisticsSection = lazy(() => import('./components/Statistics/StatisticsSection').then(m => ({ default: m.StatisticsSection })))
 
@@ -128,7 +128,7 @@ function App() {
               <DashboardCards stats={stats} formatCurrency={formatCurrency} />
             </Suspense>
             {transactions.length > 0 && (
-              <div className="grid gap-6">
+              <div className="grid gap-6 md:grid-cols-2">
                 <Suspense fallback={<LoadingSpinner />}>
                   <ChartsSection chartData={chartData} formatCurrency={formatCurrency} />
                 </Suspense>
