@@ -101,8 +101,7 @@ function TransactionList({
       ...transaction,
       amount: transaction.amount.toString().replace('.', ','),
       recurrence: transaction.recurrence || 'none',
-      recurrenceFrequency: transaction.recurrenceFrequency || '',
-      installments: transaction.installments || ''
+      recurrenceFrequency: transaction.recurrenceFrequency || ''
     })
   }
 
@@ -138,19 +137,11 @@ function TransactionList({
         return
       }
 
-      if (editTransaction.recurrence === 'parcelada' && (!editTransaction.installments || editTransaction.installments < 2)) {
-        toast.error('Parcelas inválidas', {
-          description: 'Digite um número válido de parcelas (mínimo 2)'
-        })
-        return
-      }
-
       const updatedTransaction = {
         ...editTransaction,
         amount,
         recurrence: editTransaction.recurrence || 'none',
-        recurrenceFrequency: editTransaction.recurrence === 'recorrente' ? editTransaction.recurrenceFrequency : '',
-        installments: editTransaction.recurrence === 'parcelada' ? parseInt(editTransaction.installments) : null
+        recurrenceFrequency: editTransaction.recurrence === 'recorrente' ? editTransaction.recurrenceFrequency : ''
       }
 
       await onUpdateTransaction(updatedTransaction)
@@ -223,13 +214,6 @@ function TransactionList({
       return (
         <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
           {transaction.recurrenceFrequency}
-        </Badge>
-      )
-    }
-    if (transaction.recurrence === 'parcelada') {
-      return (
-        <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-xs">
-          {transaction.installments}x
         </Badge>
       )
     }
@@ -478,7 +462,6 @@ function TransactionList({
                           <SelectContent>
                             <SelectItem value="none">Única</SelectItem>
                             <SelectItem value="recorrente">Recorrente</SelectItem>
-                            <SelectItem value="parcelada">Parcelada</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -501,20 +484,6 @@ function TransactionList({
                             <SelectItem value="anual">Anual</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                    )}
-
-                    {editTransaction.recurrence === 'parcelada' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-installments">Número de Parcelas</Label>
-                        <Input
-                          id="edit-installments"
-                          type="number"
-                          min="2"
-                          placeholder="Ex: 12"
-                          value={editTransaction.installments || ''}
-                          onChange={e => setEditTransaction({ ...editTransaction, installments: e.target.value })}
-                        />
                       </div>
                     )}
 

@@ -15,10 +15,10 @@ import {
   Tag,
   FileText,
   Repeat,
-  CreditCard,
   TrendingUp,
   TrendingDown,
-  Sparkles
+  Sparkles,
+  CreditCard
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { 
@@ -98,9 +98,16 @@ function TransactionForm({ onAddTransaction }) {
     try {
       const amount = parseFloat(newTransaction.amount.replace(/[^\d,]/g, '').replace(',', '.'))
       
+      // Se for parcelada, incluir informação na descrição
+      let description = newTransaction.description.trim()
+      if (newTransaction.recurrence === 'parcelada' && newTransaction.installments) {
+        description += ` (${newTransaction.installments}x)`
+      }
+      
       const transaction = {
         ...newTransaction,
         amount,
+        description,
         id: Date.now().toString(),
         createdAt: new Date().toISOString()
       }
@@ -287,8 +294,8 @@ function TransactionForm({ onAddTransaction }) {
                 onValueChange={value => setNewTransaction({ 
                   ...newTransaction, 
                   recurrence: value, 
-                  recurrenceFrequency: '', 
-                  installments: '' 
+                  recurrenceFrequency: '',
+                  installments: ''
                 })}
               >
                 <SelectTrigger>
