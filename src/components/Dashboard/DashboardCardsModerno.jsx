@@ -12,7 +12,7 @@ import {
   Calendar
 } from 'lucide-react'
 
-export function DashboardCards({ stats, formatCurrency }) {
+function DashboardCards({ stats, formatCurrency }) {
   const { 
     currentBalance, 
     monthlyIncome, 
@@ -207,3 +207,5 @@ export function DashboardCards({ stats, formatCurrency }) {
     </div>
   )
 }
+
+export default DashboardCards

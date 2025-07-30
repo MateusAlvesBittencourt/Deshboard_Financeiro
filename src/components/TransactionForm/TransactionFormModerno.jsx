@@ -28,7 +28,7 @@ import {
   validateAmount 
 } from '@/utils/financial'
 
-export function TransactionForm({ onAddTransaction }) {
+function TransactionForm({ onAddTransaction }) {
   const [newTransaction, setNewTransaction] = useState({
     type: 'expense',
     amount: '',
@@ -395,3 +395,5 @@ export function TransactionForm({ onAddTransaction }) {
     </Card>
   )
 }
+
+export default TransactionForm

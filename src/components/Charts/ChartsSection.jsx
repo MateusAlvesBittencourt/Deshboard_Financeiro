@@ -18,7 +18,7 @@ import {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658']
 
-export function ChartsSection({ chartData, formatCurrency }) {
+function ChartsSection({ chartData, formatCurrency }) {
   const { pieData, barData, lineData } = chartData
 
   if (!pieData.length && !barData.length && !lineData.length) {
@@ -155,3 +155,5 @@ export function ChartsSection({ chartData, formatCurrency }) {
     </>
   )
 }
+
+export default ChartsSection

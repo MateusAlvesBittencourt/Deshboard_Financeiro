@@ -1,12 +1,11 @@
-import { useMemo, useCallback } from 'react'
+import { useCallback } from 'react'
 import Papa from 'papaparse'
 
-export function useDataExport(transactions) {
+export function useDataExport() {
   // Função para exportar dados para CSV
-  const exportToCSV = useCallback(() => {
-    if (transactions.length === 0) {
-      alert("Nenhuma transação para exportar.")
-      return
+  const exportToCsv = useCallback((transactions) => {
+    if (!transactions || transactions.length === 0) {
+      throw new Error("Nenhuma transação para exportar.")
     }
 
     // Cabeçalho correto
@@ -30,13 +29,12 @@ export function useDataExport(transactions) {
       link.click()
       document.body.removeChild(link)
     }
-  }, [transactions])
+  }, [])
 
   // Função para exportar dados para TXT
-  const exportToTXT = useCallback(() => {
-    if (transactions.length === 0) {
-      alert("Nenhuma transação para exportar.")
-      return
+  const exportToTxt = useCallback((transactions) => {
+    if (!transactions || transactions.length === 0) {
+      throw new Error("Nenhuma transação para exportar.")
     }
 
     const headers = "id,type,amount,category,description,date,createdAt"
@@ -59,19 +57,18 @@ export function useDataExport(transactions) {
       link.click()
       document.body.removeChild(link)
     }
-  }, [transactions])
+  }, [])
 
   return {
-    exportToCSV,
-    exportToTXT
+    exportToCsv,
+    exportToTxt
   }
 }
 
-export function useDataImport(transactions, onTransactionsUpdate) {
-  const importFromCSV = useCallback(async (file, salvarDado, listarDados) => {
+export function useDataImport() {
+  const importFromCsv = useCallback(async (file, transactions, onTransactionsUpdate, salvarDado, listarDados) => {
     if (!file) {
-      alert('Nenhum arquivo selecionado.')
-      return
+      throw new Error('Nenhum arquivo selecionado.')
     }
 
     try {
@@ -85,21 +82,14 @@ export function useDataImport(transactions, onTransactionsUpdate) {
       })
 
       if (!results.data || results.data.length === 0) {
-        alert('Nenhum dado encontrado no arquivo CSV.')
-        return
+        throw new Error('Nenhum dado encontrado no arquivo CSV.')
       }
       
-      console.log('Transações existentes:', transactions)
-      
       const existingIds = new Set(transactions.map(t => t.id))
-      console.log('IDs existentes:', Array.from(existingIds))
       
       const newTransactions = results.data.filter(t => {
-        console.log('Verificando transação:', t)
         return t.id && !existingIds.has(t.id)
       })
-      
-      console.log('Transações novas encontradas:', newTransactions)
 
       if (newTransactions.length > 0) {
         const parsedTransactions = newTransactions.map(t => ({
@@ -113,17 +103,17 @@ export function useDataImport(transactions, onTransactionsUpdate) {
         
         const updatedTransactions = await listarDados()
         onTransactionsUpdate(updatedTransactions)
-        alert(`${newTransactions.length} novas transações importadas!`)
+        return `${newTransactions.length} novas transações importadas!`
       } else {
-        alert("Nenhuma transação nova encontrada no arquivo.")
+        throw new Error("Nenhuma transação nova encontrada no arquivo.")
       }
     } catch (error) {
       console.error('Erro ao importar CSV:', error)
-      alert('Erro ao processar o arquivo CSV. Verifique o formato.')
+      throw new Error('Erro ao processar o arquivo CSV. Verifique o formato.')
     }
-  }, [transactions, onTransactionsUpdate])
+  }, [])
 
   return {
-    importFromCSV
+    importFromCsv
   }
 }

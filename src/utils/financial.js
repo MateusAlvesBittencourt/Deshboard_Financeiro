@@ -54,8 +54,8 @@ export const validateAmount = (value) => {
 }
 
 // Categorias predefinidas
-export const INCOME_CATEGORIES = ['Salário', 'Freelance', 'Investimentos', 'Outros']
-export const EXPENSE_CATEGORIES = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Lazer', 'Educação', 'Outros']
+export const INCOME_CATEGORIES = ['Salário', 'Freelance', 'Investimentos', 'Outros Rendimentos']
+export const EXPENSE_CATEGORIES = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Lazer', 'Educação', 'Outras Despesas']
 
 // Opções de recorrência
 export const RECURRENCE_OPTIONS = [

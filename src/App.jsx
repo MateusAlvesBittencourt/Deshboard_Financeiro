@@ -16,11 +16,11 @@ import { useChartData } from './hooks/useChartData'
 import { useFilters } from './hooks/useFilters'
 
 // Componentes Lazy Loading para performance
-const DashboardCards = lazy(() => import('./components/Dashboard/DashboardCardsModerno').then(m => ({ default: m.DashboardCards })))
-const TransactionForm = lazy(() => import('./components/TransactionForm/TransactionFormModerno').then(m => ({ default: m.TransactionForm })))
-const TransactionList = lazy(() => import('./components/TransactionList/TransactionListModerno').then(m => ({ default: m.TransactionList })))
-const ChartsSection = lazy(() => import('./components/Charts/ChartsSection').then(m => ({ default: m.ChartsSection })))
-const StatisticsSection = lazy(() => import('./components/Statistics/StatisticsSection').then(m => ({ default: m.StatisticsSection })))
+const DashboardCards = lazy(() => import('./components/Dashboard/DashboardCardsModerno'))
+const TransactionForm = lazy(() => import('./components/TransactionForm/TransactionFormModerno'))
+const TransactionList = lazy(() => import('./components/TransactionList/TransactionListModerno'))
+const ChartsSection = lazy(() => import('./components/Charts/ChartsSection'))
+const StatisticsSection = lazy(() => import('./components/Statistics/StatisticsSection'))
 
 // Utils
 import { formatCurrency } from './utils/financial'

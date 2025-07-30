@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { TrendingDown, TrendingUp } from 'lucide-react'
 
-export function StatisticsSection({ transactions, stats, advancedStats, chartData, formatCurrency }) {
+function StatisticsSection({ transactions, stats, advancedStats, chartData, formatCurrency }) {
   const { currentBalance, monthlySavings, monthlyExpenses } = stats
   const { barData } = chartData
 
@@ -120,3 +120,5 @@ export function StatisticsSection({ transactions, stats, advancedStats, chartDat
     </Card>
   )
 }
+
+export default StatisticsSection
