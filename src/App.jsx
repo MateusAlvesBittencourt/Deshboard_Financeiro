@@ -101,7 +101,7 @@ function App() {
   const advancedStats = useAdvancedStats(transactions)
   const chartData = useChartData(transactions)
   const { filteredTransactions, filters, setFilters, resetFilters } = useFilters(transactions)
-  const { createInstallmentGroup, forceProcessInstallments, installmentGroups } = useInstallmentManager()
+  const { createInstallmentGroup, forceProcessInstallments, installmentGroups, cleanCorruptedData } = useInstallmentManager()
   
   const importInputRef = useRef(null)
 
@@ -212,6 +212,12 @@ function App() {
                     <span>Processamento manual (para testes)</span>
                     <Button onClick={forceProcessInstallments} variant="outline">
                       Processar Agora
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Limpar dados corrompidos</span>
+                    <Button onClick={cleanCorruptedData} variant="outline" className="text-red-600">
+                      Limpar Dados
                     </Button>
                   </div>
                 </CardContent>

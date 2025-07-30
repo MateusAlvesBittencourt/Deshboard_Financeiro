@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { salvarDado, listarDados } from '../lib/db'
+import { salvarDado, listarDados, deletarDado } from '../lib/db'
 import { toast } from 'sonner'
 
 export function useInstallmentManager() {
@@ -27,7 +27,24 @@ export function useInstallmentManager() {
   const createInstallmentGroup = useCallback(async (transactionData) => {
     try {
       const groupId = `installment_${Date.now()}`
-      const startDate = new Date(transactionData.date)
+      
+      // Validar e normalizar a data
+      let startDate
+      if (transactionData.date) {
+        // Se a data já está no formato YYYY-MM-DD, usar diretamente
+        if (typeof transactionData.date === 'string' && transactionData.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          startDate = new Date(transactionData.date + 'T12:00:00')
+        } else {
+          startDate = new Date(transactionData.date)
+        }
+      } else {
+        startDate = new Date()
+      }
+      
+      // Verificar se a data é válida
+      if (isNaN(startDate.getTime())) {
+        throw new Error('Data inválida fornecida')
+      }
       
       // Criar grupo de parcelas
       const installmentGroup = {
@@ -36,7 +53,7 @@ export function useInstallmentManager() {
         originalTransaction: transactionData,
         totalInstallments: parseInt(transactionData.installments),
         paidInstallments: 0,
-        startDate: transactionData.date,
+        startDate: startDate.toISOString().split('T')[0], // Garantir formato YYYY-MM-DD
         status: 'active',
         createdAt: new Date().toISOString()
       }
@@ -63,13 +80,28 @@ export function useInstallmentManager() {
     const { originalTransaction } = group
     const installmentAmount = originalTransaction.amount / group.totalInstallments
     
+    // Garantir que a data está no formato correto
+    let formattedDate
+    if (date instanceof Date) {
+      formattedDate = date.toISOString().split('T')[0]
+    } else if (typeof date === 'string') {
+      // Se já é string, verificar se está no formato correto
+      if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        formattedDate = date
+      } else {
+        formattedDate = new Date(date).toISOString().split('T')[0]
+      }
+    } else {
+      formattedDate = new Date().toISOString().split('T')[0]
+    }
+    
     const transaction = {
       id: `${group.id}_installment_${installmentNumber}`,
       type: originalTransaction.type,
       amount: installmentAmount,
       category: originalTransaction.category,
       description: `${originalTransaction.description} (${installmentNumber}/${group.totalInstallments})`,
-      date: date.toISOString().split('T')[0],
+      date: formattedDate,
       installmentGroup: group.id,
       installmentNumber,
       isInstallment: true,
@@ -241,12 +273,46 @@ export function useInstallmentManager() {
 
   }, [processInstallments])
 
+  // Limpar dados corrompidos (transações com data inválida)
+  const cleanCorruptedData = useCallback(async () => {
+    try {
+      const allData = await listarDados()
+      let cleanedCount = 0
+      
+      for (const item of allData) {
+        // Verificar se é uma transação com data inválida
+        if (item.date && item.date !== 'Invalid Date' && item.date !== '') {
+          // Tentar parseá-la
+          const testDate = new Date(item.date)
+          if (isNaN(testDate.getTime()) || item.date === 'Invalid Date') {
+            // Dados corrompidos - remover
+            await deletarDado(item.id)
+            cleanedCount++
+          }
+        }
+      }
+      
+      if (cleanedCount > 0) {
+        toast.success('Dados limpos!', {
+          description: `${cleanedCount} registros corrompidos foram removidos`
+        })
+        await loadInstallmentGroups()
+      }
+      
+      return { cleanedCount }
+    } catch (error) {
+      console.error('Erro ao limpar dados:', error)
+      return { cleanedCount: 0, error: error.message }
+    }
+  }, [loadInstallmentGroups])
+
   return {
     installmentGroups,
     lastProcessedDate,
     createInstallmentGroup,
     processInstallments,
     forceProcessInstallments,
-    loadInstallmentGroups
+    loadInstallmentGroups,
+    cleanCorruptedData
   }
 }
