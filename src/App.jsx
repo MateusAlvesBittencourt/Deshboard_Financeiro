@@ -6,7 +6,7 @@ import { useTheme } from "next-themes"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar.jsx'
 import { Separator } from '@/components/ui/separator.jsx'
 import { Toaster } from '@/components/ui/sonner.jsx'
-import { Home, Plus, List, BarChart3, Settings, Moon, Sun, Menu } from 'lucide-react'
+import { Home, Plus, List, BarChart3, CreditCard, Settings, Moon, Sun, Menu } from 'lucide-react'
 import './App.css'
 
 // Hooks customizados
@@ -14,6 +14,7 @@ import { useTransactions } from './hooks/useTransactions'
 import { useFinancialStats, useAdvancedStats } from './hooks/useFinancialStats'
 import { useChartData } from './hooks/useChartData'
 import { useFilters } from './hooks/useFilters'
+import { useInstallmentManager } from './hooks/useInstallmentManager'
 
 // Componentes Lazy Loading para performance
 const DashboardCards = lazy(() => import('./components/Dashboard/DashboardCards'))
@@ -39,6 +40,7 @@ function AppSidebar({ activeTab, setActiveTab }) {
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'add-transaction', label: 'Nova Transação', icon: Plus },
     { id: 'transactions', label: 'Transações', icon: List },
+    { id: 'installments', label: 'Parcelas', icon: CreditCard },
     { id: 'analytics', label: 'Análises', icon: BarChart3 },
   ]
 
@@ -99,8 +101,20 @@ function App() {
   const advancedStats = useAdvancedStats(transactions)
   const chartData = useChartData(transactions)
   const { filteredTransactions, filters, setFilters, resetFilters } = useFilters(transactions)
+  const { createInstallmentGroup, forceProcessInstallments, installmentGroups } = useInstallmentManager()
   
   const importInputRef = useRef(null)
+
+  // Função para adicionar transação com suporte a parcelas
+  const handleAddTransaction = async (transactionData) => {
+    if (transactionData.recurrence === 'parcelada') {
+      // Criar grupo de parcelas
+      return await createInstallmentGroup(transactionData)
+    } else {
+      // Transação normal
+      return await addTransaction(transactionData)
+    }
+  }
 
   if (loading) {
     return (
@@ -146,7 +160,7 @@ function App() {
               </p>
             </div>
             <Suspense fallback={<LoadingSpinner />}>
-              <TransactionForm onAddTransaction={addTransaction} />
+              <TransactionForm onAddTransaction={handleAddTransaction} />
             </Suspense>
           </div>
         )
@@ -172,6 +186,99 @@ function App() {
                 importInputRef={importInputRef}
               />
             </Suspense>
+          </div>
+        )
+      case 'installments':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Gestão de Parcelas</h1>
+              <p className="text-muted-foreground">
+                Acompanhe suas transações parceladas e processamento automático
+              </p>
+            </div>
+            
+            {/* Painel de controle de parcelas */}
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Controle Automático</CardTitle>
+                  <CardDescription>
+                    O sistema processa as parcelas automaticamente todo dia 15 do mês
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span>Processamento manual (para testes)</span>
+                    <Button onClick={forceProcessInstallments} variant="outline">
+                      Processar Agora
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Lista de grupos de parcelas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Grupos de Parcelas Ativos</CardTitle>
+                  <CardDescription>
+                    {installmentGroups.filter(g => g.status === 'active').length} grupos ativos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {installmentGroups.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      Nenhum grupo de parcelas encontrado.
+                      <br />
+                      Crie uma transação parcelada para começar.
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {installmentGroups.map(group => (
+                        <div key={group.id} className="border rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-medium">{group.originalTransaction.description}</h3>
+                            <Badge variant={group.status === 'active' ? 'default' : 'secondary'}>
+                              {group.status === 'active' ? 'Ativo' : 'Concluído'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Valor Total:</span>
+                              <p className="font-medium">{formatCurrency(group.originalTransaction.amount)}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Parcelas:</span>
+                              <p className="font-medium">{group.paidInstallments}/{group.totalInstallments}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Valor por Parcela:</span>
+                              <p className="font-medium">{formatCurrency(group.originalTransaction.amount / group.totalInstallments)}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Início:</span>
+                              <p className="font-medium">{new Date(group.startDate).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                          </div>
+                          
+                          {group.status === 'active' && (
+                            <div className="mt-3">
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-primary h-2 rounded-full transition-all" 
+                                  style={{ width: `${(group.paidInstallments / group.totalInstallments) * 100}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )
       case 'analytics':

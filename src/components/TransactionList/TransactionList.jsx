@@ -2,8 +2,11 @@ import { useState, useRef, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { Input } from '@/components/ui/input.jsx'
+import { Label } from '@/components/ui/label.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
+import { Textarea } from '@/components/ui/textarea.jsx'
+import { Switch } from '@/components/ui/switch.jsx'
 import { Separator } from '@/components/ui/separator.jsx'
 import { 
   Calendar, 
@@ -96,7 +99,10 @@ function TransactionList({
   const startEditTransaction = (transaction) => {
     setEditTransaction({
       ...transaction,
-      amount: transaction.amount.toString().replace('.', ',')
+      amount: transaction.amount.toString().replace('.', ','),
+      recurrence: transaction.recurrence || 'none',
+      recurrenceFrequency: transaction.recurrenceFrequency || '',
+      installments: transaction.installments || ''
     })
   }
 
@@ -105,13 +111,46 @@ function TransactionList({
       const amount = parseFloat(editTransaction.amount.replace(/[^\d,]/g, '').replace(',', '.'))
       
       if (isNaN(amount) || amount <= 0) {
-        toast.error('Valor inválido')
+        toast.error('Valor inválido', {
+          description: 'Digite um valor válido maior que zero'
+        })
+        return
+      }
+
+      if (!editTransaction.category) {
+        toast.error('Categoria obrigatória', {
+          description: 'Selecione uma categoria para a transação'
+        })
+        return
+      }
+
+      if (!editTransaction.description.trim()) {
+        toast.error('Descrição obrigatória', {
+          description: 'Digite uma descrição para a transação'
+        })
+        return
+      }
+
+      if (editTransaction.recurrence === 'recorrente' && !editTransaction.recurrenceFrequency) {
+        toast.error('Frequência obrigatória', {
+          description: 'Selecione a frequência da recorrência'
+        })
+        return
+      }
+
+      if (editTransaction.recurrence === 'parcelada' && (!editTransaction.installments || editTransaction.installments < 2)) {
+        toast.error('Parcelas inválidas', {
+          description: 'Digite um número válido de parcelas (mínimo 2)'
+        })
         return
       }
 
       const updatedTransaction = {
         ...editTransaction,
-        amount
+        amount,
+        recurrence: editTransaction.recurrence || 'none',
+        recurrenceFrequency: editTransaction.recurrence === 'recorrente' ? editTransaction.recurrenceFrequency : '',
+        installments: editTransaction.recurrence === 'parcelada' ? parseInt(editTransaction.installments) : null
       }
 
       await onUpdateTransaction(updatedTransaction)
@@ -351,47 +390,152 @@ function TransactionList({
                 }`}
               >
                 {editTransaction?.id === transaction.id ? (
-                  // Modo de Edição
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        value={editTransaction.amount}
-                        onChange={e => {
-                          const formatted = formatCurrencyInput(e.target.value)
-                          setEditTransaction({ ...editTransaction, amount: formatted })
-                        }}
-                        className="font-medium"
-                      />
-                      <Select
-                        value={editTransaction.category}
-                        onValueChange={value => setEditTransaction({ ...editTransaction, category: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(editTransaction.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(category => (
-                            <SelectItem key={category} value={category}>{category}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
+                  // Modo de Edição Completo
+                  <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                    {/* Tipo da Transação */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Tipo da Transação</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant={editTransaction.type === 'income' ? 'default' : 'outline'}
+                          size="sm"
+                          className={`${editTransaction.type === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
+                          onClick={() => setEditTransaction({ ...editTransaction, type: 'income', category: '' })}
+                        >
+                          Receita
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={editTransaction.type === 'expense' ? 'default' : 'outline'}
+                          size="sm"
+                          className={`${editTransaction.type === 'expense' ? 'bg-red-600 hover:bg-red-700' : ''}`}
+                          onClick={() => setEditTransaction({ ...editTransaction, type: 'expense', category: '' })}
+                        >
+                          Despesa
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Campos principais */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-amount">Valor</Label>
+                        <Input
+                          id="edit-amount"
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0,00"
+                          value={editTransaction.amount}
+                          onChange={e => {
+                            const formatted = formatCurrencyInput(e.target.value)
+                            setEditTransaction({ ...editTransaction, amount: formatted })
+                          }}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-category">Categoria</Label>
+                        <Select
+                          value={editTransaction.category}
+                          onValueChange={value => setEditTransaction({ ...editTransaction, category: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma categoria" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(editTransaction.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(category => (
+                              <SelectItem key={category} value={category}>{category}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-date">Data</Label>
+                        <Input
+                          id="edit-date"
+                          type="date"
+                          value={editTransaction.date}
+                          onChange={e => setEditTransaction({ ...editTransaction, date: e.target.value })}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-recurrence">Recorrência</Label>
+                        <Select
+                          value={editTransaction.recurrence || 'none'}
+                          onValueChange={value => setEditTransaction({ 
+                            ...editTransaction, 
+                            recurrence: value,
+                            recurrenceFrequency: value === 'none' ? '' : editTransaction.recurrenceFrequency,
+                            installments: value === 'none' ? '' : editTransaction.installments
+                          })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Única</SelectItem>
+                            <SelectItem value="recorrente">Recorrente</SelectItem>
+                            <SelectItem value="parcelada">Parcelada</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Campos condicionais de recorrência */}
+                    {editTransaction.recurrence === 'recorrente' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-frequency">Frequência</Label>
+                        <Select
+                          value={editTransaction.recurrenceFrequency || ''}
+                          onValueChange={value => setEditTransaction({ ...editTransaction, recurrenceFrequency: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a frequência" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="semanal">Semanal</SelectItem>
+                            <SelectItem value="mensal">Mensal</SelectItem>
+                            <SelectItem value="anual">Anual</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {editTransaction.recurrence === 'parcelada' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-installments">Número de Parcelas</Label>
+                        <Input
+                          id="edit-installments"
+                          type="number"
+                          min="2"
+                          placeholder="Ex: 12"
+                          value={editTransaction.installments || ''}
+                          onChange={e => setEditTransaction({ ...editTransaction, installments: e.target.value })}
+                        />
+                      </div>
+                    )}
+
+                    {/* Descrição */}
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-description">Descrição</Label>
+                      <Textarea
+                        id="edit-description"
+                        placeholder="Descreva a transação..."
                         value={editTransaction.description}
                         onChange={e => setEditTransaction({ ...editTransaction, description: e.target.value })}
-                      />
-                      <Input
-                        type="date"
-                        value={editTransaction.date}
-                        onChange={e => setEditTransaction({ ...editTransaction, date: e.target.value })}
+                        rows={2}
                       />
                     </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={saveEditTransaction} className="h-8">
-                        Salvar
+
+                    {/* Botões de ação */}
+                    <div className="flex gap-2 pt-2">
+                      <Button size="sm" onClick={saveEditTransaction}>
+                        Salvar Alterações
                       </Button>
-                      <Button size="sm" variant="outline" onClick={cancelEditTransaction} className="h-8">
+                      <Button size="sm" variant="outline" onClick={cancelEditTransaction}>
                         Cancelar
                       </Button>
                     </div>
