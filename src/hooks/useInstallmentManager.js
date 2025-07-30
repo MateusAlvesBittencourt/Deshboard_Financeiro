@@ -9,8 +9,11 @@ export function useInstallmentManager() {
   // Carregar grupos de parcelas do IndexedDB
   const loadInstallmentGroups = useCallback(async () => {
     try {
+      console.log('Carregando grupos de parcelas...')
       const data = await listarDados()
+      console.log('Dados carregados:', data)
       const groups = data.filter(item => item.type === 'installment_group')
+      console.log('Grupos filtrados:', groups)
       setInstallmentGroups(groups)
       
       // Carregar última data de processamento

@@ -1,6 +1,7 @@
 import { useState, useRef, Suspense, lazy } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
+import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { useTheme } from "next-themes"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar.jsx'
@@ -189,104 +190,138 @@ function App() {
           </div>
         )
       case 'installments':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Gestão de Parcelas</h1>
-              <p className="text-muted-foreground">
-                Acompanhe suas transações parceladas e processamento automático
-              </p>
-            </div>
-            
-            {/* Painel de controle de parcelas */}
-            <div className="grid gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Controle Automático</CardTitle>
-                  <CardDescription>
-                    O sistema processa as parcelas automaticamente todo dia 15 do mês
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span>Processamento manual (para testes)</span>
-                    <Button onClick={forceProcessInstallments} variant="outline">
-                      Processar Agora
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Limpar dados corrompidos</span>
-                    <Button onClick={cleanCorruptedData} variant="outline" className="text-red-600">
-                      Limpar Dados
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+        try {
+          return (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Gestão de Parcelas</h1>
+                <p className="text-muted-foreground">
+                  Acompanhe suas transações parceladas e processamento automático
+                </p>
+              </div>
+              
+              {/* Painel de controle de parcelas */}
+              <div className="grid gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Controle Automático</CardTitle>
+                    <CardDescription>
+                      O sistema processa as parcelas automaticamente todo dia 15 do mês
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span>Processamento manual (para testes)</span>
+                      <Button onClick={forceProcessInstallments} variant="outline">
+                        Processar Agora
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Limpar dados corrompidos</span>
+                      <Button onClick={cleanCorruptedData} variant="outline" className="text-red-600">
+                        Limpar Dados
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Lista de grupos de parcelas */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Grupos de Parcelas Ativos</CardTitle>
-                  <CardDescription>
-                    {installmentGroups.filter(g => g.status === 'active').length} grupos ativos
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {installmentGroups.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">
-                      Nenhum grupo de parcelas encontrado.
-                      <br />
-                      Crie uma transação parcelada para começar.
-                    </p>
-                  ) : (
-                    <div className="space-y-4">
-                      {installmentGroups.map(group => (
-                        <div key={group.id} className="border rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-medium">{group.originalTransaction.description}</h3>
-                            <Badge variant={group.status === 'active' ? 'default' : 'secondary'}>
-                              {group.status === 'active' ? 'Ativo' : 'Concluído'}
-                            </Badge>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">Valor Total:</span>
-                              <p className="font-medium">{formatCurrency(group.originalTransaction.amount)}</p>
+                {/* Lista de grupos de parcelas */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Grupos de Parcelas Ativos</CardTitle>
+                    <CardDescription>
+                      {installmentGroups ? installmentGroups.filter(g => g.status === 'active').length : 0} grupos ativos
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!installmentGroups || installmentGroups.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">
+                        Nenhum grupo de parcelas encontrado.
+                        <br />
+                        Crie uma transação parcelada para começar.
+                      </p>
+                    ) : (
+                      <div className="space-y-4">
+                        {installmentGroups.map(group => (
+                          <div key={group.id} className="border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="font-medium">{group.originalTransaction?.description || 'Sem descrição'}</h3>
+                              <Badge variant={group.status === 'active' ? 'default' : 'secondary'}>
+                                {group.status === 'active' ? 'Ativo' : 'Concluído'}
+                              </Badge>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">Parcelas:</span>
-                              <p className="font-medium">{group.paidInstallments}/{group.totalInstallments}</p>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Valor por Parcela:</span>
-                              <p className="font-medium">{formatCurrency(group.originalTransaction.amount / group.totalInstallments)}</p>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">Início:</span>
-                              <p className="font-medium">{new Date(group.startDate).toLocaleDateString('pt-BR')}</p>
-                            </div>
-                          </div>
-                          
-                          {group.status === 'active' && (
-                            <div className="mt-3">
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-primary h-2 rounded-full transition-all" 
-                                  style={{ width: `${(group.paidInstallments / group.totalInstallments) * 100}%` }}
-                                ></div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Valor Total:</span>
+                                <p className="font-medium">
+                                  {group.originalTransaction?.amount ? formatCurrency(group.originalTransaction.amount) : 'N/A'}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Parcelas:</span>
+                                <p className="font-medium">{group.paidInstallments || 0}/{group.totalInstallments || 0}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Valor por Parcela:</span>
+                                <p className="font-medium">
+                                  {group.originalTransaction?.amount && group.totalInstallments ? 
+                                    formatCurrency(group.originalTransaction.amount / group.totalInstallments) : 'N/A'}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Início:</span>
+                                <p className="font-medium">
+                                  {group.startDate ? new Date(group.startDate).toLocaleDateString('pt-BR') : 'N/A'}
+                                </p>
                               </div>
                             </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                            
+                            {group.status === 'active' && group.paidInstallments != null && group.totalInstallments && (
+                              <div className="mt-3">
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-primary h-2 rounded-full transition-all" 
+                                    style={{ 
+                                      width: `${Math.min(100, Math.max(0, (group.paidInstallments / group.totalInstallments) * 100))}%` 
+                                    }}
+                                  ></div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )
+        } catch (error) {
+          console.error('Erro na seção de parcelas:', error)
+          return (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Gestão de Parcelas</h1>
+                <p className="text-muted-foreground">
+                  Acompanhe suas transações parceladas e processamento automático
+                </p>
+              </div>
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="text-red-600 mb-4">Erro ao carregar dados de parcelas</p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Detalhes: {error.message}
+                  </p>
+                  <Button onClick={cleanCorruptedData} variant="outline">
+                    Tentar Limpar Dados
+                  </Button>
                 </CardContent>
               </Card>
             </div>
-          </div>
-        )
+          )
+        }
       case 'analytics':
         return (
           <div className="space-y-6">
