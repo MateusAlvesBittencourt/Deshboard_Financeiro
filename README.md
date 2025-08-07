@@ -1,4 +1,4 @@
-# 💰 Dashboard Financeiro v2.0
+# 💰 Dashboard Financeiro v3.0
 
 Dashboard completo para controle financeiro pessoal desenvolvido em React com arquitetura moderna, performance otimizada e funcionalidades avançadas de análise financeira.
 
@@ -25,6 +25,9 @@ npm run dev
 - ✅ Estatísticas detalhadas e projeções
 - ✅ Alertas visuais para limites excedidos
 - ✅ Identificação de transações recorrentes
+- 🆕 **Consulta mensal com comparações**
+- 🆕 **Histórico financeiro de múltiplos meses**
+- 🆕 **Análise de tendências mensais**
 
 ### 💼 Gestão de Transações
 - ✅ Cadastro/edição de receitas e despesas
@@ -40,13 +43,14 @@ npm run dev
 - ✅ Tratamento de erros
 - ✅ Interface otimizada para mobile
 
-## 🏗️ Arquitetura v2.0
+## 🏗️ Arquitetura v3.0
 
 ### Performance Otimizada
 - **89% redução** no código principal (1076 → 119 linhas)
-- **5 hooks customizados** para lógica reutilizável
-- **6 componentes especializados** 
+- **7 hooks customizados** para lógica reutilizável
+- **8 componentes especializados** 
 - **Memoização** com useMemo e useCallback
+- 🆕 **Análise mensal avançada**
 
 ### 🛠️ Tecnologias
 
@@ -68,20 +72,24 @@ src/
 │   ├── TransactionList.jsx      # Lista de transações
 │   ├── ChartsSection.jsx        # Gráficos interativos
 │   ├── StatisticsSection.jsx    # Estatísticas avançadas
-│   └── ThemeToggle.jsx          # Alternador de tema
+│   ├── ThemeToggle.jsx          # Alternador de tema
+│   └── Monthly/                 # 🆕 Análise mensal
+│       ├── MonthlyAnalysis.jsx  # Análise por mês
+│       └── MonthlyHistoryChart.jsx # Histórico mensal
 ├── hooks/
 │   ├── useTransactions.js       # CRUD de transações
 │   ├── useFinancialStats.js     # Cálculos financeiros
 │   ├── useChartData.js          # Dados para gráficos
 │   ├── useFilters.js            # Sistema de filtros
-│   └── useDataImportExport.js   # Import/Export CSV
+│   ├── useDataImportExport.js   # Import/Export CSV
+│   └── useMonthlyData.js        # 🆕 Análise mensal
 └── lib/
     ├── db.js                    # IndexedDB setup
     ├── utils.js                 # Utilitários gerais
     └── financial.js             # Funções financeiras
 ```
 
-## 🎯 Melhorias v2.0
+## 🎯 Melhorias v3.0
 
 - ⚡ **Performance**: Redução de 89% no código principal
 - 🧩 **Modularidade**: Componentes especializados e hooks reutilizáveis
@@ -89,15 +97,21 @@ src/
 - 📱 **Responsividade**: Interface adaptada para todos os dispositivos
 - 🎨 **UX**: Estados de carregamento e feedback visual
 - 🔒 **Confiabilidade**: Tratamento robusto de erros
+- 🆕 **Análise Mensal**: Consulta detalhada por mês específico
+- 🆕 **Histórico Financeiro**: Visualização de múltiplos meses
+- 🆕 **Comparações Mensais**: Análise de variações entre meses
+- 🆕 **Tendências**: Gráficos de evolução temporal
 
 ## 📊 Métricas
 
 - **Linhas de código**: 89% de redução (1076 → 119 linhas no App.jsx)
-- **Componentes**: 11 módulos especializados
+- **Componentes**: 13 módulos especializados (+2 novos)
+- **Hooks**: 7 hooks customizados (+2 novos)
 - **Performance**: Otimizado com memoização
+- **Funcionalidades**: Análise mensal completa
 - **Cobertura**: 100% das funcionalidades migradas
 
 ---
 
-**Dashboard Financeiro v2.0** - Arquitetura moderna, performance otimizada e experiência de usuário excepcional 🚀
+**Dashboard Financeiro v3.0** - Arquitetura moderna, análise mensal avançada e experiência de usuário excepcional 🚀
 

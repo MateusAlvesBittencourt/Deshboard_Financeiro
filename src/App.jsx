@@ -6,7 +6,7 @@ import { useTheme } from "next-themes"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar.jsx'
 import { Separator } from '@/components/ui/separator.jsx'
 import { Toaster } from '@/components/ui/sonner.jsx'
-import { Home, Plus, List, BarChart3, Settings, Moon, Sun, Menu } from 'lucide-react'
+import { Home, Plus, List, BarChart3, Calendar, Settings, Moon, Sun, Menu } from 'lucide-react'
 import './App.css'
 
 // Hooks customizados
@@ -14,6 +14,7 @@ import { useTransactions } from './hooks/useTransactions'
 import { useFinancialStats, useAdvancedStats } from './hooks/useFinancialStats'
 import { useChartData } from './hooks/useChartData'
 import { useFilters } from './hooks/useFilters'
+import { useMonthlyData, useMultiMonthData } from './hooks/useMonthlyData'
 
 // Componentes Lazy Loading para performance
 const DashboardCards = lazy(() => import('./components/Dashboard/DashboardCards'))
@@ -21,6 +22,8 @@ const TransactionForm = lazy(() => import('./components/TransactionForm/Transact
 const TransactionList = lazy(() => import('./components/TransactionList/TransactionList'))
 const ChartsSection = lazy(() => import('./components/Charts/ChartsSection'))
 const StatisticsSection = lazy(() => import('./components/Statistics/StatisticsSection'))
+const MonthlyAnalysis = lazy(() => import('./components/Monthly/MonthlyAnalysis'))
+const MonthlyHistoryChart = lazy(() => import('./components/Monthly/MonthlyHistoryChart'))
 
 // Utils
 import { formatCurrency } from './utils/financial'
@@ -40,6 +43,7 @@ function AppSidebar({ activeTab, setActiveTab }) {
     { id: 'add-transaction', label: 'Nova Transação', icon: Plus },
     { id: 'transactions', label: 'Transações', icon: List },
     { id: 'analytics', label: 'Análises', icon: BarChart3 },
+    { id: 'monthly', label: 'Consulta Mensal', icon: Calendar },
   ]
 
   return (
@@ -99,6 +103,10 @@ function App() {
   const advancedStats = useAdvancedStats(transactions)
   const chartData = useChartData(transactions)
   const { filteredTransactions, filters, setFilters, resetFilters } = useFilters(transactions)
+  
+  // Hooks para análise mensal
+  const monthlyData = useMonthlyData(transactions)
+  const multiMonthData = useMultiMonthData(transactions, 12)
   
   const importInputRef = useRef(null)
 
@@ -198,6 +206,35 @@ function App() {
                   stats={stats}
                   advancedStats={advancedStats}
                   chartData={chartData}
+                  formatCurrency={formatCurrency}
+                />
+              </Suspense>
+            </div>
+          </div>
+        )
+      case 'monthly':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Consulta Mensal</h1>
+              <p className="text-muted-foreground">
+                Análise detalhada por mês e histórico financeiro
+              </p>
+            </div>
+            <div className="space-y-6">
+              <Suspense fallback={<LoadingSpinner />}>
+                <MonthlyAnalysis 
+                  selectedMonth={monthlyData.selectedMonth}
+                  setSelectedMonth={monthlyData.setSelectedMonth}
+                  availableMonths={monthlyData.availableMonths}
+                  monthlyStats={monthlyData.monthlyStats}
+                  previousMonthComparison={monthlyData.previousMonthComparison}
+                  formatCurrency={formatCurrency}
+                />
+              </Suspense>
+              <Suspense fallback={<LoadingSpinner />}>
+                <MonthlyHistoryChart 
+                  multiMonthData={multiMonthData}
                   formatCurrency={formatCurrency}
                 />
               </Suspense>
