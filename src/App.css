@@ -118,3 +118,5 @@
     @apply bg-background text-foreground;
   }
 }
+/* UX/UI improvements */
+@import './ux-improvements.css';
