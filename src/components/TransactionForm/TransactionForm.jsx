@@ -79,6 +79,7 @@ function TransactionForm({ onAddTransaction }) {
       return
     }
 
+    // Validação de recorrência - APENAS se foi selecionada recorrência
     if (newTransaction.recurrence === 'recorrente' && !newTransaction.recurrenceFrequency) {
       toast.error('Frequência obrigatória', {
         description: 'Selecione a frequência da recorrência'
@@ -86,7 +87,8 @@ function TransactionForm({ onAddTransaction }) {
       return
     }
 
-    if (newTransaction.recurrence === 'parcelada' && (!newTransaction.installments || newTransaction.installments < 2)) {
+    // Validação de parcelamento - APENAS se foi selecionado parcelamento
+    if (newTransaction.recurrence === 'parcelada' && (!newTransaction.installments || parseInt(newTransaction.installments) < 2)) {
       toast.error('Parcelas inválidas', {
         description: 'Digite um número válido de parcelas (mínimo 2)'
       })

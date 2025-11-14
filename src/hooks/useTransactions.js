@@ -25,14 +25,9 @@ export function useTransactions() {
   // Adicionar nova transação
   const addTransaction = useCallback(async (transactionData) => {
     try {
-      const transaction = {
-        id: Date.now().toString(),
-        ...transactionData,
-        createdAt: new Date().toISOString(),
-      }
-
-      await salvarDado(transaction)
-      await fetchTransactions()
+      // A transactionData já vem pronta do formulário
+      await salvarDado(transactionData)
+      await fetchTransactions() // Recarrega a lista para mostrar a nova transação
       return { success: true }
     } catch (error) {
       console.error('Erro ao adicionar transação:', error)

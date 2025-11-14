@@ -221,367 +221,260 @@ function TransactionList({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Histórico de Transações
-            </CardTitle>
-            <CardDescription>
-              Gerencie todas as suas transações financeiras
-            </CardDescription>
-          </div>
+    <Card className="border-gray-200 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+      <CardHeader className="flex-wrap gap-4 md:flex-row">
+        <div className="flex-1">
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Histórico de Transações
+          </CardTitle>
+          <CardDescription>
+            Visualize e gerencie suas transações
+          </CardDescription>
         </div>
-
-        {/* Barra de Ferramentas */}
-        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-          {/* Filtros */}
-          <div className="flex flex-wrap gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                value={filters.filterDescription}
-                onChange={(e) => setFilters.setFilterDescription(e.target.value)}
-                className="pl-9 w-48"
-                placeholder="Buscar transações..."
-              />
-            </div>
-            
-            <Select value={filters.filterType} onValueChange={setFilters.setFilterType}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="income">Receita</SelectItem>
-                <SelectItem value="expense">Despesa</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={filters.filterCategory} onValueChange={setFilters.setFilterCategory}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
-                {[...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES].map(cat => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Button variant="outline" size="sm" onClick={resetFilters}>
-              <Filter className="h-4 w-4 mr-2" />
-              Limpar
-            </Button>
-          </div>
-
-          {/* Ações */}
-          <div className="flex gap-2 ml-auto">
-            <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === 'detailed' ? 'compact' : 'detailed')}>
-              {viewMode === 'detailed' ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
-            
-            <Button variant="outline" size="sm" onClick={handleExportCsv}>
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
-            
-            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-              <Upload className="h-4 w-4 mr-2" />
-              Importar
-            </Button>
-            
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImportCsv}
-              accept=".csv"
-              className="hidden"
-            />
-          </div>
-        </div>
-
-        {/* Cabeçalho da Lista com Ordenação */}
-        <div className="flex items-center gap-4 py-2 px-4 bg-muted/30 rounded-lg">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 justify-start"
-            onClick={() => handleSort('date')}
-          >
-            Data
-            <ArrowUpDown className="ml-2 h-3 w-3" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => fileInputRef.current.click()}>
+            <Upload className="mr-2 h-4 w-4" />
+            Importar
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 justify-start"
-            onClick={() => handleSort('type')}
-          >
-            Tipo
-            <ArrowUpDown className="ml-2 h-3 w-3" />
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept=".csv"
+            onChange={handleImportCsv}
+          />
+          <Button variant="outline" size="sm" onClick={handleExportCsv}>
+            <Download className="mr-2 h-4 w-4" />
+            Exportar
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 justify-start"
-            onClick={() => handleSort('amount')}
-          >
-            Valor
-            <ArrowUpDown className="ml-2 h-3 w-3" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 justify-start"
-            onClick={() => handleSort('category')}
-          >
-            Categoria
-            <ArrowUpDown className="ml-2 h-3 w-3" />
-          </Button>
-        </div>
-
-        <div className="text-sm text-muted-foreground">
-          {filteredTransactions.length} de {transactions.length} transações
         </div>
       </CardHeader>
-      
       <CardContent>
-        {sortedTransactions.length === 0 ? (
-          <div className="text-center py-12">
-            <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-muted-foreground mb-2">
-              Nenhuma transação encontrada
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {transactions.length === 0 
-                ? 'Adicione sua primeira transação para começar'
-                : 'Tente ajustar os filtros para encontrar suas transações'
-              }
-            </p>
+        {/* Filtros */}
+        <div className="mb-6 rounded-lg border border-dashed p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              <h3 className="text-lg font-semibold">Filtros</h3>
+            </div>
+            <Button variant="ghost" size="sm" onClick={resetFilters}>
+              Limpar filtros
+            </Button>
           </div>
-        ) : (
-          <div className="space-y-2">
-            {sortedTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className={`group relative rounded-lg border p-4 transition-all hover:shadow-md ${
-                  selectedTransactions.includes(transaction.id) ? 'border-primary bg-primary/5' : ''
-                }`}
-              >
-                {editTransaction?.id === transaction.id ? (
-                  // Modo de Edição Completo
-                  <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
-                    {/* Tipo da Transação */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Tipo da Transação</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          type="button"
-                          variant={editTransaction.type === 'income' ? 'default' : 'outline'}
-                          size="sm"
-                          className={`${editTransaction.type === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
-                          onClick={() => setEditTransaction({ ...editTransaction, type: 'income', category: '' })}
-                        >
-                          Receita
-                        </Button>
-                        <Button
-                          type="button"
-                          variant={editTransaction.type === 'expense' ? 'default' : 'outline'}
-                          size="sm"
-                          className={`${editTransaction.type === 'expense' ? 'bg-red-600 hover:bg-red-700' : ''}`}
-                          onClick={() => setEditTransaction({ ...editTransaction, type: 'expense', category: '' })}
-                        >
-                          Despesa
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Campos principais */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-amount">Valor</Label>
-                        <Input
-                          id="edit-amount"
-                          type="text"
-                          inputMode="decimal"
-                          placeholder="0,00"
-                          value={editTransaction.amount}
-                          onChange={e => {
-                            const formatted = formatCurrencyInput(e.target.value)
-                            setEditTransaction({ ...editTransaction, amount: formatted })
-                          }}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-category">Categoria</Label>
-                        <Select
-                          value={editTransaction.category}
-                          onValueChange={value => setEditTransaction({ ...editTransaction, category: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma categoria" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {(editTransaction.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(category => (
-                              <SelectItem key={category} value={category}>{category}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-date">Data</Label>
-                        <Input
-                          id="edit-date"
-                          type="date"
-                          value={editTransaction.date}
-                          onChange={e => setEditTransaction({ ...editTransaction, date: e.target.value })}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-recurrence">Recorrência</Label>
-                        <Select
-                          value={editTransaction.recurrence || 'none'}
-                          onValueChange={value => setEditTransaction({ 
-                            ...editTransaction, 
-                            recurrence: value,
-                            recurrenceFrequency: value === 'none' ? '' : editTransaction.recurrenceFrequency,
-                            installments: value === 'none' ? '' : editTransaction.installments
-                          })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Única</SelectItem>
-                            <SelectItem value="recorrente">Recorrente</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* Campos condicionais de recorrência */}
-                    {editTransaction.recurrence === 'recorrente' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="edit-frequency">Frequência</Label>
-                        <Select
-                          value={editTransaction.recurrenceFrequency || ''}
-                          onValueChange={value => setEditTransaction({ ...editTransaction, recurrenceFrequency: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione a frequência" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="semanal">Semanal</SelectItem>
-                            <SelectItem value="mensal">Mensal</SelectItem>
-                            <SelectItem value="anual">Anual</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-
-                    {/* Descrição */}
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-description">Descrição</Label>
-                      <Textarea
-                        id="edit-description"
-                        placeholder="Descreva a transação..."
-                        value={editTransaction.description}
-                        onChange={e => setEditTransaction({ ...editTransaction, description: e.target.value })}
-                        rows={2}
-                      />
-                    </div>
-
-                    {/* Botões de ação */}
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" onClick={saveEditTransaction}>
-                        Salvar Alterações
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={cancelEditTransaction}>
-                        Cancelar
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  // Modo de Visualização
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 flex-1 min-w-0">
-                      {/* Checkbox para seleção */}
-                      <input
-                        type="checkbox"
-                        checked={selectedTransactions.includes(transaction.id)}
-                        onChange={() => toggleTransactionSelection(transaction.id)}
-                        className="rounded border-gray-300"
-                      />
-                      
-                      {/* Ícone do tipo */}
-                      <div className={`p-2 rounded-full ${transaction.type === 'income' ? 'bg-emerald-100' : 'bg-red-100'}`}>
-                        {transaction.type === 'income' ? (
-                          <TrendingUp className="h-4 w-4 text-emerald-600" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4 text-red-600" />
-                        )}
-                      </div>
-                      
-                      {/* Informações da transação */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium truncate">{transaction.description}</span>
-                          {getRecurrenceBadge(transaction)}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <Badge variant="outline" className="text-xs">
-                            {transaction.category}
-                          </Badge>
-                          <span>{new Date(transaction.date).toLocaleDateString('pt-BR')}</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Valor e ações */}
-                    <div className="flex items-center gap-3">
-                      <span className={`text-lg font-bold ${
-                        transaction.type === 'income' 
-                          ? 'text-emerald-600' 
-                          : 'text-red-600'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
-                      </span>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => startEditTransaction(transaction)}>
-                            <Edit3 className="mr-2 h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            onClick={() => handleDeleteTransaction(transaction.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                )}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1">
+              <Label htmlFor="search">Pesquisar</Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  type="text"
+                  placeholder="Descrição ou valor..."
+                  value={filters.searchTerm}
+                  onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
+                  className="pl-9"
+                />
               </div>
-            ))}
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="type">Tipo</Label>
+              <Select
+                value={filters.type}
+                onValueChange={(value) => setFilters({ ...filters, type: value })}
+              >
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Todos os tipos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="income">Receita</SelectItem>
+                  <SelectItem value="expense">Despesa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="startDate">Data Inicial</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="endDate">Data Final</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="category">Categoria</Label>
+              <Select
+                value={filters.category}
+                onValueChange={(value) => setFilters({ ...filters, category: value })}
+              >
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Todas as categorias" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Receitas</DropdownMenuLabel>
+                  {INCOME_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Despesas</DropdownMenuLabel>
+                  {EXPENSE_CATEGORIES.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabela de Transações */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b transition-colors hover:bg-muted/50">
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  <Button variant="ghost" size="sm" onClick={() => handleSort('type')}>
+                    Tipo
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  Descrição
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  <Button variant="ghost" size="sm" onClick={() => handleSort('amount')}>
+                    Valor
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  <Button variant="ghost" size="sm" onClick={() => handleSort('category')}>
+                    Categoria
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                  <Button variant="ghost" size="sm" onClick={() => handleSort('date')}>
+                    Data
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </th>
+                <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedTransactions.map(transaction => (
+                <tr key={transaction.id} className="border-b transition-colors hover:bg-muted/50">
+                  <td className="p-4 align-middle">
+                    <Badge variant={transaction.type === 'income' ? 'success' : 'destructive'}>
+                      {transaction.type === 'income' ? 'Receita' : 'Despesa'}
+                    </Badge>
+                  </td>
+                  <td className="p-4 align-middle font-medium">{transaction.description}</td>
+                  <td className={`p-4 align-middle ${transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {formatCurrency(transaction.amount)}
+                  </td>
+                  <td className="p-4 align-middle text-muted-foreground">{transaction.category}</td>
+                  <td className="p-4 align-middle text-muted-foreground">
+                    {new Date(transaction.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                  </td>
+                  <td className="p-4 align-middle text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => startEditTransaction(transaction)}>
+                          <Edit3 className="mr-2 h-4 w-4" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteTransaction(transaction.id)} className="text-red-600">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {sortedTransactions.length === 0 && (
+          <div className="py-12 text-center">
+            <p className="text-muted-foreground">Nenhuma transação encontrada.</p>
+          </div>
+        )}
+
+        {/* Modal de Edição */}
+        {editTransaction && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <Card className="w-full max-w-lg">
+              <CardHeader>
+                <CardTitle>Editar Transação</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-amount">Valor</Label>
+                  <Input
+                    id="edit-amount"
+                    value={editTransaction.amount}
+                    onChange={(e) => setEditTransaction({ ...editTransaction, amount: formatCurrencyInput(e.target.value) })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-description">Descrição</Label>
+                  <Textarea
+                    id="edit-description"
+                    value={editTransaction.description}
+                    onChange={(e) => setEditTransaction({ ...editTransaction, description: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Categoria</Label>
+                  <Select
+                    value={editTransaction.category}
+                    onValueChange={(value) => setEditTransaction({ ...editTransaction, category: value })}
+                  >
+                    <SelectTrigger id="edit-category">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(editTransaction.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(category => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-date">Data</Label>
+                  <Input
+                    id="edit-date"
+                    type="date"
+                    value={editTransaction.date}
+                    onChange={(e) => setEditTransaction({ ...editTransaction, date: e.target.value })}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={cancelEditTransaction}>Cancelar</Button>
+                  <Button onClick={saveEditTransaction}>Salvar</Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
       </CardContent>
