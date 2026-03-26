@@ -6,8 +6,6 @@ import { Label } from '@/components/ui/label.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Textarea } from '@/components/ui/textarea.jsx'
-import { Switch } from '@/components/ui/switch.jsx'
-import { Separator } from '@/components/ui/separator.jsx'
 import { 
   Calendar, 
   Download, 
@@ -17,11 +15,7 @@ import {
   MoreHorizontal,
   Edit3,
   Trash2,
-  Eye,
-  EyeOff,
   ArrowUpDown,
-  TrendingUp,
-  TrendingDown
 } from 'lucide-react'
 import { 
   DropdownMenu,
@@ -49,8 +43,6 @@ function TransactionList({
   const [editTransaction, setEditTransaction] = useState(null)
   const [sortBy, setSortBy] = useState('date')
   const [sortOrder, setSortOrder] = useState('desc')
-  const [viewMode, setViewMode] = useState('detailed') // 'detailed' | 'compact'
-  const [selectedTransactions, setSelectedTransactions] = useState([])
   
   const fileInputRef = useRef(null)
   const { exportToCsv } = useDataExport()
@@ -199,25 +191,6 @@ function TransactionList({
       }
     }
     event.target.value = ''
-  }
-
-  const toggleTransactionSelection = (id) => {
-    setSelectedTransactions(prev => 
-      prev.includes(id) 
-        ? prev.filter(t => t !== id)
-        : [...prev, id]
-    )
-  }
-
-  const getRecurrenceBadge = (transaction) => {
-    if (transaction.recurrence === 'recorrente') {
-      return (
-        <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-          {transaction.recurrenceFrequency}
-        </Badge>
-      )
-    }
-    return null
   }
 
   return (

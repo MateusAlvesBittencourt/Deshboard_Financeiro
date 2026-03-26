@@ -1,51 +1,46 @@
 import { useState, useMemo } from 'react'
 
+const INITIAL_FILTERS = {
+  type: 'all',
+  category: 'all',
+  startDate: '',
+  endDate: '',
+  searchTerm: ''
+}
+
 export function useFilters(transactions) {
-  const [filterType, setFilterType] = useState('all')
-  const [filterCategory, setFilterCategory] = useState('all')
-  const [filterStartDate, setFilterStartDate] = useState('')
-  const [filterEndDate, setFilterEndDate] = useState('')
-  const [filterDescription, setFilterDescription] = useState('')
+  const [filters, setFilters] = useState(INITIAL_FILTERS)
 
   const filteredTransactions = useMemo(() => {
-    return transactions.filter(t => {
-      // Tipo
-      if (filterType !== 'all' && t.type !== filterType) return false
-      // Categoria
-      if (filterCategory !== 'all' && t.category !== filterCategory) return false
-      // Período
-      if (filterStartDate && new Date(t.date) < new Date(filterStartDate)) return false
-      if (filterEndDate && new Date(t.date) > new Date(filterEndDate)) return false
-      // Descrição
-      if (filterDescription && !t.description.toLowerCase().includes(filterDescription.toLowerCase())) return false
+    return transactions.filter((transaction) => {
+      if (filters.type !== 'all' && transaction.type !== filters.type) return false
+      if (filters.category !== 'all' && transaction.category !== filters.category) return false
+      if (filters.startDate && new Date(transaction.date) < new Date(filters.startDate)) return false
+      if (filters.endDate && new Date(transaction.date) > new Date(filters.endDate)) return false
+
+      if (filters.searchTerm) {
+        const searchValue = filters.searchTerm.toLowerCase()
+        const normalizedAmount = transaction.amount.toString().replace('.', ',')
+        const matchesSearch =
+          transaction.description.toLowerCase().includes(searchValue) ||
+          transaction.category.toLowerCase().includes(searchValue) ||
+          normalizedAmount.includes(searchValue)
+
+        if (!matchesSearch) return false
+      }
+
       return true
     })
-  }, [transactions, filterType, filterCategory, filterStartDate, filterEndDate, filterDescription])
+  }, [transactions, filters])
 
   const resetFilters = () => {
-    setFilterType('all')
-    setFilterCategory('all')
-    setFilterStartDate('')
-    setFilterEndDate('')
-    setFilterDescription('')
+    setFilters(INITIAL_FILTERS)
   }
 
   return {
     filteredTransactions,
-    filters: {
-      filterType,
-      filterCategory,
-      filterStartDate,
-      filterEndDate,
-      filterDescription
-    },
-    setFilters: {
-      setFilterType,
-      setFilterCategory,
-      setFilterStartDate,
-      setFilterEndDate,
-      setFilterDescription
-    },
+    filters,
+    setFilters,
     resetFilters
   }
 }

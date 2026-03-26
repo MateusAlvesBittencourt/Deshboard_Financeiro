@@ -1,12 +1,10 @@
-import { useState, useRef, Suspense, lazy } from 'react'
+import { useState, Suspense, lazy } from 'react'
 import { Button } from '@/components/ui/button.jsx'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { useTheme } from "next-themes"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar.jsx'
 import { Separator } from '@/components/ui/separator.jsx'
 import { Toaster } from '@/components/ui/sonner.jsx'
-import { Home, Plus, List, BarChart3, Calendar, Settings, Moon, Sun, Menu } from 'lucide-react'
+import { Home, Plus, List, BarChart3, Calendar, Moon, Sun } from 'lucide-react'
 import './App.css'
 
 // Hooks customizados
@@ -47,44 +45,42 @@ function AppSidebar({ activeTab, setActiveTab }) {
   ]
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="surface shadow-md min-h-screen">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <BarChart3 className="h-4 w-4" />
+        <div className="flex items-center gap-3 px-4 py-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-(--color-accent) text-(--color-accent-contrast) shadow">
+            <BarChart3 className="h-5 w-5" />
           </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
+          <div className="grid flex-1 text-left text-base leading-tight">
             <span className="truncate font-semibold">Dashboard</span>
-            <span className="truncate text-xs text-muted-foreground">Financeiro v3.0</span>
+            <span className="truncate text-xs muted">Financeiro v3.0</span>
           </div>
         </div>
       </SidebarHeader>
-      
       <SidebarContent>
-        <nav className="grid gap-1 px-2">
+        <nav className="grid gap-2 px-2">
           {menuItems.map((item) => {
             const Icon = item.icon
             return (
               <Button
                 key={item.id}
                 variant={activeTab === item.id ? "secondary" : "ghost"}
-                className="w-full justify-start gap-2"
+                className={`w-full justify-start gap-3 rounded-md transition hover:bg-accent/10 ${activeTab === item.id ? 'font-semibold' : ''}`}
                 onClick={() => setActiveTab(item.id)}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-5 w-5" />
                 {item.label}
               </Button>
             )
           })}
         </nav>
       </SidebarContent>
-      
       <SidebarFooter>
-        <div className="px-2 py-4">
+        <div className="px-4 py-6">
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start gap-2"
+            className="w-full justify-start gap-2 rounded-md"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -108,8 +104,6 @@ function App() {
   const monthlyData = useMonthlyData(transactions)
   const multiMonthData = useMultiMonthData(transactions, 12)
   
-  const importInputRef = useRef(null)
-
   // Função para adicionar transação simples
   const handleAddTransaction = async (transactionData) => {
     return await addTransaction(transactionData)
@@ -117,10 +111,10 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Carregando seus dados financeiros...</p>
+      <div className="min-h-screen flex items-center justify-center bg-(--color-bg)">
+        <div className="text-center space-y-4 surface p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-(--color-accent) mx-auto"></div>
+          <p className="muted">Carregando seus dados financeiros...</p>
         </div>
       </div>
     )
@@ -130,10 +124,10 @@ function App() {
     switch (activeTab) {
       case 'dashboard':
         return (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-6 container">
+            <div className="surface p-6 flex flex-col gap-2">
               <h1 className="text-3xl font-bold tracking-tight">Dashboard Financeiro</h1>
-              <p className="text-muted-foreground">
+              <p className="muted">
                 Visão geral das suas finanças pessoais
               </p>
             </div>
@@ -151,57 +145,57 @@ function App() {
         )
       case 'add-transaction':
         return (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-6 container">
+            <div className="surface p-6 flex flex-col gap-2">
               <h1 className="text-3xl font-bold tracking-tight">Nova Transação</h1>
-              <p className="text-muted-foreground">
+              <p className="muted">
                 Adicione uma nova receita ou despesa
               </p>
             </div>
-            <Suspense fallback={<LoadingSpinner />}>
-              <TransactionForm onAddTransaction={handleAddTransaction} />
-            </Suspense>
+            <div className="elevated p-6">
+              <Suspense fallback={<LoadingSpinner />}>
+                <TransactionForm onAddTransaction={handleAddTransaction} />
+              </Suspense>
+            </div>
           </div>
         )
       case 'transactions':
         return (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-6 container">
+            <div className="surface p-6 flex flex-col gap-2">
               <h1 className="text-3xl font-bold tracking-tight">Transações</h1>
-              <p className="text-muted-foreground">
-                Gerencie todas as suas transações
+              <p className="muted">
+                Lista de todas as suas transações
               </p>
             </div>
-            <Suspense fallback={<LoadingSpinner />}>
-              <TransactionList 
-                transactions={transactions}
-                filteredTransactions={filteredTransactions}
-                filters={filters}
-                setFilters={setFilters}
-                resetFilters={resetFilters}
-                onUpdateTransaction={updateTransaction}
-                onDeleteTransaction={deleteTransaction}
-                formatCurrency={formatCurrency}
-                importInputRef={importInputRef}
-              />
-            </Suspense>
+            <div className="elevated p-6">
+              <Suspense fallback={<LoadingSpinner />}>
+                <TransactionList
+                  transactions={transactions}
+                  filteredTransactions={filteredTransactions}
+                  filters={filters}
+                  setFilters={setFilters}
+                  resetFilters={resetFilters}
+                  onUpdateTransaction={updateTransaction}
+                  onDeleteTransaction={deleteTransaction}
+                  formatCurrency={formatCurrency}
+                />
+              </Suspense>
+            </div>
           </div>
         )
       case 'analytics':
         return (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-6 container">
+            <div className="surface p-6 flex flex-col gap-2">
               <h1 className="text-3xl font-bold tracking-tight">Análises</h1>
-              <p className="text-muted-foreground">
-                Insights detalhados sobre suas finanças
+              <p className="muted">
+                Estatísticas e gráficos avançados
               </p>
             </div>
-            <div className="space-y-6">
+            <div className="elevated p-6">
               <Suspense fallback={<LoadingSpinner />}>
-                <ChartsSection chartData={chartData} formatCurrency={formatCurrency} />
-              </Suspense>
-              <Suspense fallback={<LoadingSpinner />}>
-                <StatisticsSection 
+                <StatisticsSection
                   transactions={transactions}
                   stats={stats}
                   advancedStats={advancedStats}
@@ -214,26 +208,24 @@ function App() {
         )
       case 'monthly':
         return (
-          <div className="space-y-6">
-            <div>
+          <div className="space-y-6 container">
+            <div className="surface p-6 flex flex-col gap-2">
               <h1 className="text-3xl font-bold tracking-tight">Consulta Mensal</h1>
-              <p className="text-muted-foreground">
-                Análise detalhada por mês e histórico financeiro
+              <p className="muted">
+                Histórico mensal das suas finanças
               </p>
             </div>
-            <div className="space-y-6">
+            <div className="elevated p-6 mb-4">
               <Suspense fallback={<LoadingSpinner />}>
-                <MonthlyAnalysis 
-                  selectedMonth={monthlyData.selectedMonth}
-                  setSelectedMonth={monthlyData.setSelectedMonth}
-                  availableMonths={monthlyData.availableMonths}
-                  monthlyStats={monthlyData.monthlyStats}
-                  previousMonthComparison={monthlyData.previousMonthComparison}
+                <MonthlyAnalysis
+                  {...monthlyData}
                   formatCurrency={formatCurrency}
                 />
               </Suspense>
+            </div>
+            <div className="elevated p-6">
               <Suspense fallback={<LoadingSpinner />}>
-                <MonthlyHistoryChart 
+                <MonthlyHistoryChart
                   multiMonthData={multiMonthData}
                   formatCurrency={formatCurrency}
                 />
@@ -248,19 +240,21 @@ function App() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full bg-(--color-bg)">
         <AppSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-(--color-surface)">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <div className="flex items-center gap-2 text-sm">
               <span className="font-medium">Dashboard Financeiro</span>
-              <span className="text-muted-foreground">v3.0</span>
+              <span className="muted">v3.0</span>
             </div>
           </header>
-          <main className="flex-1 space-y-4 p-6">
-            {renderContent()}
+          <main className="flex-1 flex flex-col items-center justify-start p-4 md:p-8">
+            <div className="w-full max-w-5xl">
+              {renderContent()}
+            </div>
           </main>
         </SidebarInset>
       </div>
